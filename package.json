@@ -10,8 +10,14 @@
     "test": "jest"
   },
   "dependencies": {
+    "@everapi/freecurrencyapi-js": "^1.0.1",
+    "expo": "^50.0.4",
+    "expo-camera": "~14.0.3",
+    "expo-permissions": "^14.4.0",
     "react": "18.2.0",
-    "react-native": "0.73.2"
+    "react-native": "0.73.2",
+    "react-native-camera": "^4.2.1",
+    "react-native-modal": "^13.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
