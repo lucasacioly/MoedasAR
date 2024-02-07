@@ -43,10 +43,12 @@ const App = () => {
         if (!isCameraFrozen) {
           // Se não estiver congelada, congela a câmera e tira uma foto
           const options = { quality: 0.5, base64: true };
+          cameraRef.current.pausePreview();
           const data = await cameraRef.current.takePictureAsync(options);
           setCapturedImage(data.uri);
         } else {
           // Se estiver congelada, retoma a visualização da câmera
+          setCapturedImage(null);
           cameraRef.current.resumePreview();
 
         }
@@ -91,16 +93,21 @@ const App = () => {
             Exchange Rate: {exchangeRate}
           </Text>
         </View>
+        <View style={styles.exchangeRateContainer}>
+          <Text style={styles.exchangeRateText}>
+            Camera Status: {isCameraFrozen ? 'Frozen' : 'Unfrozen'}
+          </Text>
+        </View>
 
 
-        {capturedImage && isCameraFrozen ? (
+        {capturedImage ? (
           <Image source={{ uri: capturedImage }} style={styles.preview} />
         ) : (
           <RNCamera
             ref={cameraRef}
             style={styles.preview}
             type={RNCamera.Constants.Type.back}
-            paused={isCameraFrozen}
+            captureAudio={false}
           />
         )}
 
