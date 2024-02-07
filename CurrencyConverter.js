@@ -14,7 +14,7 @@ class CurrencyConverter {
         currencies: targetCurrency,
       });
 
-      return response.data;
+      return response.data[targetCurrency];
     } catch (error) {
       console.error('Error fetching latest exchange rates:', error);
       throw error;

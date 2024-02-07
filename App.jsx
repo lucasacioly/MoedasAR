@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Image, SafeAreaView } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import { Camera } from 'expo-camera';
@@ -12,19 +12,21 @@ import currencyData from './CurrencyData'; // Replace with the correct path
 const App = () => {
 
     const apiKey = 'fca_live_sT5V2xA0sM7b79KKu6knetcS5XAL8nfC8TGOk4On'; // Replace with your actual API key
-    const converter = new CurrencyConverter(apiKey);
     const [exchangeRate, setExchangeRate] = useState(1);
+    const [tentouConverter, setTentouConverter] = useState( 'n');
 
-    const fetchExchangeRate = async () => {
+    
+    /*const fetchExchangeRate = async (m1, m2) => {
+
       try {
-        let rate = await converter.getLatestExchangeRate(moeda1Status, moeda2Status);
+        setTentouConverter('s');
+        const rate = await converter.getLatestExchangeRate(moeda1Status, moeda2Status);
         setExchangeRate(rate);
         console.log('Latest exchange rate:', exchangeRate);
-        // Now you can use the exchange rate as needed
       } catch (error) {
-        console.error('Error fetching exchange rate:', error);
+        setExchangeRate(-1);
       }
-    };
+    };*/
 
     const [isCameraFrozen, setIsCameraFrozen] = useState(false);
     const [capturedImage, setCapturedImage] = useState(null);
@@ -55,6 +57,35 @@ const App = () => {
       }
     };
 
+
+    const fetchExchangeRate = useCallback(async () => {
+      try {
+        setTentouConverter('s');
+        const converter = new CurrencyConverter(apiKey);
+        const rate = await converter.getLatestExchangeRate(moeda1Status, moeda2Status);
+        setExchangeRate(rate);
+        //console.log('Latest exchange rate:', exchangeRate);
+      } catch (error) {
+        setExchangeRate(-1);
+      }
+    }, [moeda1Status, moeda2Status]);
+    
+    const handleCurrencySelection = (selectedCurrency) => {
+      if (selectedMoedaButton === 'moeda1') {
+        setMoeda1Status(selectedCurrency.code);
+      } else if (selectedMoedaButton === 'moeda2') {
+        setMoeda2Status(selectedCurrency.code);
+      }
+    
+      setIsCurrencyModalVisible(false);
+    };
+    
+    useEffect(() => {
+      if (moeda1Status !== null && moeda2Status !== null) {
+        fetchExchangeRate();
+      }
+    }, [moeda1Status, moeda2Status, fetchExchangeRate]);
+    
   
     const closeCurrencyModal = () => {
       setIsCurrencyModalVisible(false);
@@ -70,20 +101,24 @@ const App = () => {
       setIsCurrencyModalVisible(true);
     };
 
-    const handleCurrencySelection = (selectedCurrency) => {
+    /*const handleCurrencySelection = (selectedCurrency) => {
       if (selectedMoedaButton === 'moeda1') {
         setMoeda1Status(selectedCurrency.code);
+        //console.log('moeda 1 atualizada {}', moeda1Status);
+        //console.log('moeda 2 atualizada {}', moeda2Status);
       } else if (selectedMoedaButton === 'moeda2') {
         setMoeda2Status(selectedCurrency.code);
+        //console.log('moeda 2 atualizada {}', moeda2Status);
       }
     
       setIsCurrencyModalVisible(false);
     
       // Check if both moeda1Status and moeda2Status are not null before fetching the exchange rate
       if (moeda1Status !== null && moeda2Status !== null) {
+        console.log('entrou');
         fetchExchangeRate();
       }
-    };
+    };*/
 
     return (
       <SafeAreaView style={styles.container}>
@@ -93,12 +128,22 @@ const App = () => {
             Exchange Rate: {exchangeRate}
           </Text>
         </View>
-        <View style={styles.exchangeRateContainer}>
+                <View style={styles.exchangeRateContainer}>
           <Text style={styles.exchangeRateText}>
-            Camera Status: {isCameraFrozen ? 'Frozen' : 'Unfrozen'}
+            Tentou?: {tentouConverter}
           </Text>
         </View>
 
+        <View style={styles.exchangeRateContainer}>
+          <Text style={styles.exchangeRateText}>
+            Moeda1: {moeda1Status}
+          </Text>
+        </View>
+        <View style={styles.exchangeRateContainer}>
+          <Text style={styles.exchangeRateText}>
+            Moeda2: {moeda2Status}
+          </Text>
+        </View>
 
         {capturedImage ? (
           <Image source={{ uri: capturedImage }} style={styles.preview} />
