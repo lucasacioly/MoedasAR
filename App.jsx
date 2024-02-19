@@ -7,9 +7,23 @@ import CurrencyConverter from './CurrencyConverter'; // Replace with the correct
 import CurrencyModal from './CurrencyModal'; // Replace with the correct path
 import currencyData from './CurrencyData'; // Replace with the correct path
 
-
+import { NativeModules } from 'react-native';
 
 const App = () => {
+  
+    console.log("hello")
+    console.log(NativeModules)
+    
+    const { TextRecognition } = NativeModules;
+
+
+    TextRecognition.exampleMethod(
+      'Party',
+      result => {
+        console.log(result);
+      },
+    );
+
 
     const apiKey = 'fca_live_sT5V2xA0sM7b79KKu6knetcS5XAL8nfC8TGOk4On'; // Replace with your actual API key
     const converter = new CurrencyConverter(apiKey);
