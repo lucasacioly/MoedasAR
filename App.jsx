@@ -10,19 +10,19 @@ import currencyData from './CurrencyData'; // Replace with the correct path
 import { NativeModules } from 'react-native';
 
 const App = () => {
-  
+
     console.log("hello")
-    console.log(NativeModules)
+    //console.log(NativeModules)
     
     const { TextRecognition } = NativeModules;
 
 
-    TextRecognition.exampleMethod(
+    /*TextRecognition.exampleMethod(
       'Party',
       result => {
         console.log(result);
       },
-    );
+    );*/
 
 
     const apiKey = 'fca_live_sT5V2xA0sM7b79KKu6knetcS5XAL8nfC8TGOk4On'; // Replace with your actual API key
@@ -52,24 +52,96 @@ const App = () => {
     const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
     const [selectedMoedaButton, setSelectedMoedaButton] = useState('');
 
-    const toggleFreezeFrame = async () => {
-      setIsCameraFrozen(!isCameraFrozen);
+    const base64 = require('base-64');
 
+    const toggleFreezeFrame = async () => {
+      //sendRequest()
+      setIsCameraFrozen(!isCameraFrozen);
+      
+      
       if (cameraRef.current) {
         if (!isCameraFrozen) {
+          console.log("enviando imagem");
           // Se não estiver congelada, congela a câmera e tira uma foto
           const options = { quality: 0.5, base64: true };
-          cameraRef.current.pausePreview();
           const data = await cameraRef.current.takePictureAsync(options);
           setCapturedImage(data.uri);
+          const base64Image = base64.encode(data); 
+          
+          try {
+            const response = await fetch('https://vision.googleapis.com/v1/images:annotate?key=', {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                requests: [{
+                  image: {
+                    content: base64Image
+                  },
+                  features: [{
+                    type: 'TEXT_DETECTION'
+                  }]
+                }]
+              })
+            });
+            
+            const result = await response.json();
+            console.log(result);
+            console.log("deu bom");
+            console.log('status', response.status);
+            console.log(data.responses[0].error); 
+
+            
+          } catch (error) {
+            console.log("error");
+            console.log(error);
+          }
+          cameraRef.current.pausePreview();
+          
         } else {
           // Se estiver congelada, retoma a visualização da câmera
           setCapturedImage(null);
           cameraRef.current.resumePreview();
-
         }
       }
     };
+
+    const sendRequest = async () => {
+      const options = { quality: 0.5, base64: true };
+      const data = await cameraRef.current.takePictureAsync(options);
+      setCapturedImage(data.uri);
+
+      // Base64 encode image for API request
+      const base64Image = await Base64.encode(data); 
+
+      try {
+        const response = await fetch('https://vision.googleapis.com/v1/images:annotate?key=AIzaSyD03Ilqa8cAkqPJPyMX1R7i6oUSGRi2RKo', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            requests: [{
+              image: {
+                content: base64Image
+              },
+              features: [{
+                type: 'TEXT_DETECTION'
+              }]
+            }]
+          })
+        });
+
+        const result = await response.json();
+        console.log(result);
+
+      } catch (error) {
+        console.log(error);
+      }
+    }
 
 
     const fetchExchangeRate = useCallback(async () => {
