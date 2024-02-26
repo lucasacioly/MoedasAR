@@ -8,14 +8,27 @@ buildscript {
         kotlinVersion = "1.8.0"
     }
     repositories {
-        google()
         mavenCentral()
+        mavenLocal()
+        google()
     }
     dependencies {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        google()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }
 
 apply plugin: "com.facebook.react.rootproject"

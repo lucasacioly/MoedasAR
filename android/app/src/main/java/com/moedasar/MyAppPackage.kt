@@ -15,5 +15,5 @@ class MyAppPackage : ReactPackage {
 
     override fun createNativeModules(
         reactContext: ReactApplicationContext
-    ): MutableList<NativeModule> = listOf(TextRecognition(reactContext)).toMutableList()
+    ): MutableList<NativeModule> = listOf(TextRecognizer(reactContext)).toMutableList()
 }

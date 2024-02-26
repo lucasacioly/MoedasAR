@@ -112,6 +112,9 @@ dependencies {
 
     implementation "com.facebook.react:react-native:+"
 
+    // Text features
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:19.0.0'
+
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

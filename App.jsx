@@ -10,14 +10,12 @@ import currencyData from './CurrencyData'; // Replace with the correct path
 import { NativeModules } from 'react-native';
 
 const App = () => {
-  
-    console.log("hello")
-    console.log(NativeModules)
-    
-    const { TextRecognition } = NativeModules;
+ 
+    console.log("App reloaded!")
+   
+    const { TextRecognizer } = NativeModules;
 
-
-    TextRecognition.exampleMethod(
+    TextRecognizer.exampleMethod(
       'Party',
       result => {
         console.log(result);
@@ -52,15 +50,35 @@ const App = () => {
     const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
     const [selectedMoedaButton, setSelectedMoedaButton] = useState('');
 
+    const takePicture = async () => {
+      if (cameraRef.current) {
+        const options = { quality: 0.5, base64: true };
+        // console.log("Taking picture")
+        const data = await cameraRef.current.takePictureAsync(options);
+        // console.log("Picture taken!")
+        console.log(data.uri);
+        return data;
+      }
+    }
+
     const toggleFreezeFrame = async () => {
       setIsCameraFrozen(!isCameraFrozen);
 
       if (cameraRef.current) {
         if (!isCameraFrozen) {
-          // Se não estiver congelada, congela a câmera e tira uma foto
-          const options = { quality: 0.5, base64: true };
+          // Se não estiver congelada, tira uma foto e congela a câmera
+          const data = await takePicture();
           cameraRef.current.pausePreview();
-          const data = await cameraRef.current.takePictureAsync(options);
+          TextRecognizer.processImage(
+            data.uri,
+            (error, result) => {
+                if (error) {
+                    console.error(error);
+                } else {
+                    console.log(result);
+                }
+            }
+          );
           setCapturedImage(data.uri);
         } else {
           // Se estiver congelada, retoma a visualização da câmera
