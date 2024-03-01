@@ -30,7 +30,7 @@ const App = () => {
     
     /*const fetchExchangeRate = async (m1, m2) => {
 
-      try {
+      try {cameraRef
         setTentouConverter('s');
         const rate = await converter.getLatestExchangeRate(moeda1Status, moeda2Status);
         setExchangeRate(rate);
@@ -63,32 +63,34 @@ const App = () => {
 
     const toggleFreezeFrame = async () => {
       setIsCameraFrozen(!isCameraFrozen);
-
       if (cameraRef.current) {
-        if (!isCameraFrozen) {
-          // Se não estiver congelada, tira uma foto e congela a câmera
-          const data = await takePicture();
-          cameraRef.current.pausePreview();
-          TextRecognizer.processImage(
-            data.uri,
-            (error, result) => {
-                if (error) {
-                    console.error(error);
-                } else {
-                    console.log(result);
-                }
-            }
-          );
-          setCapturedImage(data.uri);
-        } else {
-          // Se estiver congelada, retoma a visualização da câmera
-          setCapturedImage(null);
+        if (isCameraFrozen) {
+          console.log("i'm trying bro")
           cameraRef.current.resumePreview();
-
+        } else {
+          takeAndProcessPicture();
         }
       }
     };
 
+    const takeAndProcessPicture = async () => {
+      if (cameraRef.current) {
+        const options = { quality: 0.5, base64: true };
+        const data = await cameraRef.current.takePictureAsync(options);
+        TextRecognizer.processImage(
+          data.uri,
+          (error, result) => {
+            if (error) {
+              console.error("error", error);
+            } else {
+              console.log("result", result);
+            }
+          }
+          );
+          cameraRef.resumePreview()
+          setCapturedImage(data.uri);
+      }
+    };
 
     const fetchExchangeRate = useCallback(async () => {
       try {
@@ -117,7 +119,7 @@ const App = () => {
         fetchExchangeRate();
       }
     }, [moeda1Status, moeda2Status, fetchExchangeRate]);
-    
+
   
     const closeCurrencyModal = () => {
       setIsCurrencyModalVisible(false);
@@ -185,6 +187,7 @@ const App = () => {
             style={styles.preview}
             type={RNCamera.Constants.Type.back}
             captureAudio={false}
+            pauseAfterCapture={false}
           />
         )}
 
