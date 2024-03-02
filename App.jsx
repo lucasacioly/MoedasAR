@@ -50,26 +50,10 @@ const App = () => {
     const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
     const [selectedMoedaButton, setSelectedMoedaButton] = useState('');
 
-    const takePicture = async () => {
-      if (cameraRef.current) {
-        const options = { quality: 0.5, base64: true };
-        // console.log("Taking picture")
-        const data = await cameraRef.current.takePictureAsync(options);
-        // console.log("Picture taken!")
-        console.log(data.uri);
-        return data;
-      }
-    }
-
     const toggleFreezeFrame = async () => {
       setIsCameraFrozen(!isCameraFrozen);
       if (cameraRef.current) {
-        if (isCameraFrozen) {
-          console.log("i'm trying bro")
-          cameraRef.current.resumePreview();
-        } else {
           takeAndProcessPicture();
-        }
       }
     };
 
@@ -79,16 +63,19 @@ const App = () => {
         const data = await cameraRef.current.takePictureAsync(options);
         TextRecognizer.processImage(
           data.uri,
-          (error, result) => {
+          (result, error) => {
             if (error) {
               console.error("error", error);
             } else {
-              console.log("result", result);
+              console.log("processing", result);
+              const regex = /\d+[\., ]\d{0,2}[\ \n]/g;
+              const reg_result = result.match(regex);
+              console.log("result", reg_result);
             }
           }
-          );
-          cameraRef.resumePreview()
-          setCapturedImage(data.uri);
+        );
+        cameraRef.resumePreview()
+        setCapturedImage(data.uri);
       }
     };
 
