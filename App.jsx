@@ -70,7 +70,7 @@ const App = () => {
               console.log("processing", result);
               const regex = /\d+[\., ]\d{0,2}[\ \n]/g;
               const reg_result = result.match(regex);
-              console.log("result", reg_result);
+              console.log("depois do regex", reg_result);
             }
           }
         );

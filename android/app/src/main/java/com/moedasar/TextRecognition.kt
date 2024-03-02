@@ -37,6 +37,7 @@ class TextRecognizer(reactContext: ReactApplicationContext) : ReactContextBaseJa
             val result = recognizer.process(image)
                 .addOnSuccessListener { result ->
                     val resultText = result.text
+                    val elements = mutableListOf<Map<String, Any>>()
                     for (block in result.textBlocks) {
                         val blockText = block.text
                         val blockCornerPoints = block.cornerPoints
@@ -46,18 +47,39 @@ class TextRecognizer(reactContext: ReactApplicationContext) : ReactContextBaseJa
                             val lineCornerPoints = line.cornerPoints
                             val lineFrame = line.boundingBox
                             for (element in line.elements) {
-                                val elementText = element.text
-                                val elementCornerPoints = element.cornerPoints
-                                val elementFrame = element.boundingBox
+                                if (element != null) {
+                                    val elementText = element.text
+                                    val elementCornerPoints = element.cornerPoints
+                                    val elementFrame = element.boundingBox
+                                    // Get the x,y coordinates of the element's corners
+                                    val corners = mutableListOf<Map<String, Float>>()
+                                    if (elementCornerPoints != null){
+                                        for (cornerPoint in elementCornerPoints) {
+                                            val x = cornerPoint.x.toFloat()
+                                            val y = cornerPoint.y.toFloat()
+                                            corners.add(mapOf("x" to x, "y" to y))
+                                        }
+                                        // Add the element to the list of elements
+                                        elements.add(mapOf(
+                                            "text" to elementText,
+                                            "corners" to corners,
+                                            "frame" to mapOf(
+                                                Pair("left", elementFrame?.left ?: 0f),
+                                                Pair("top", elementFrame?.top ?: 0f),
+                                                Pair("right", elementFrame?.right ?: 0f),
+                                                Pair("bottom", elementFrame?.bottom ?: 0f)
+                                            )
+                                        ))
+                                    }
+                                }
                             }
                         }
                     }
+                    // essa linha deveria ser allback.invoke(resultText, elements), mas o app quebra se fizer isso
                     callback.invoke(resultText)
-                }
-                
-                .addOnFailureListener { e ->
-                    Log.e("TextRecognition", "Text recognition failed", e)
-                }
+            }.addOnFailureListener { e ->
+                Log.e("TextRecognition", "Text recognition failed", e)
+            }
         } catch (e: Exception) {
             Log.e("TextRecognition", "Failed to create image from URI", e)
         }
