@@ -12,7 +12,7 @@ import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.TextRecognizerOptionsInterface
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import android.net.Uri
-
+import org.json.JSONObject
 import android.util.Log
 
 class TextRecognizer(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
@@ -76,7 +76,10 @@ class TextRecognizer(reactContext: ReactApplicationContext) : ReactContextBaseJa
                         }
                     }
                     // essa linha deveria ser allback.invoke(resultText, elements), mas o app quebra se fizer isso
-                    callback.invoke(resultText)
+                    val response = JSONObject()
+                    response.put("text", resultText)
+                    response.put("elements", elements)
+                    callback.invoke(response.toString())
             }.addOnFailureListener { e ->
                 Log.e("TextRecognition", "Text recognition failed", e)
             }

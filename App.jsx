@@ -15,13 +15,6 @@ const App = () => {
    
     const { TextRecognizer } = NativeModules;
 
-    TextRecognizer.exampleMethod(
-      'Party',
-      result => {
-        console.log(result);
-      },
-    );
-
 
     const apiKey = 'fca_live_sT5V2xA0sM7b79KKu6knetcS5XAL8nfC8TGOk4On'; // Replace with your actual API key
     const [exchangeRate, setExchangeRate] = useState(1);
@@ -63,14 +56,48 @@ const App = () => {
         const data = await cameraRef.current.takePictureAsync(options);
         TextRecognizer.processImage(
           data.uri,
-          (result, error) => {
+          (response, error) => {
             if (error) {
               console.error("error", error);
             } else {
-              console.log("processing", result);
+              //console.log("processing", response);
+              const result = JSON.parse(response);
+              const text = result.text;
+              let elements = result.elements;
+              
+              //console.log("text:\n", text);
+              //console.log("\n\nelements:\n", elements);
+              const textList = text.split("\n");
               const regex = /\d+[\., ]\d{0,2}[\ \n]/g;
-              const reg_result = result.match(regex);
-              console.log("depois do regex", reg_result);
+              let relevantText = text.match(regex);
+              for (let i = 0; i < relevantText.length; i++) {
+                relevantText[i] = relevantText[i].replace(/\n/g, "");
+              }
+              console.log("Prices:  ", relevantText);
+              console.log("\n\nElements:  ", elements);
+              
+              /*
+              // TENTATIVA DE SALVAR OS ÍNDICES DOS PREÇOS E CASAR COM UMA POSSÍVEL
+              // LISTA DE COORDENADAS
+
+              let relevantIndexes = [];
+              let relevantElements = [];
+              if (relevantText) {
+                for (let i = 0; i < relevantText.length; i++) {
+                  relevantText[i] = relevantText[i].replace(/\n/g, "");
+                  let index = textList.indexOf(relevantText[i]);
+                  console.log("item: ", textList[index]);
+                  relevantIndexes.push(index);
+                }
+                for (let i = 0; i < relevantIndexes.length; i++) {
+
+                  relevantElements.push(elements[relevantIndexes[i]]);
+                }
+              }
+              console.log("relevantText: ", relevantText);
+              console.log("Index:", relevantIndexes);
+              console.log("Elements:", relevantElements);
+              */
             }
           }
         );
