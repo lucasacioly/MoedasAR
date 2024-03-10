@@ -6,6 +6,9 @@ import { Camera } from 'expo-camera';
 import CurrencyConverter from './CurrencyConverter'; // Replace with the correct path
 import CurrencyModal from './CurrencyModal'; // Replace with the correct path
 import currencyData from './CurrencyData'; // Replace with the correct path
+import OverlayPrice from './OverlayPrice'; // Importe o componente de sobreposição
+
+
 
 import { NativeModules } from 'react-native';
 
@@ -20,18 +23,6 @@ const App = () => {
     const [exchangeRate, setExchangeRate] = useState(1);
     const [tentouConverter, setTentouConverter] = useState( 'n');
 
-    
-    /*const fetchExchangeRate = async (m1, m2) => {
-
-      try {cameraRef
-        setTentouConverter('s');
-        const rate = await converter.getLatestExchangeRate(moeda1Status, moeda2Status);
-        setExchangeRate(rate);
-        console.log('Latest exchange rate:', exchangeRate);
-      } catch (error) {
-        setExchangeRate(-1);
-      }
-    };*/
 
     const [isCameraFrozen, setIsCameraFrozen] = useState(false);
     const [capturedImage, setCapturedImage] = useState(null);
@@ -43,6 +34,8 @@ const App = () => {
     const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
     const [selectedMoedaButton, setSelectedMoedaButton] = useState('');
 
+    const [dimentions, setDimentions] = useState(null);
+    const [pricesAndPositions, setPricesAndPositions] = useState([]);
     const toggleFreezeFrame = async () => {
       setIsCameraFrozen(!isCameraFrozen);
       if (cameraRef.current) {
@@ -62,42 +55,10 @@ const App = () => {
             } else {
               //console.log("processing", response);
               const result = JSON.parse(response);
-              const text = result.text;
-              let elements = result.elements;
-              
-              //console.log("text:\n", text);
-              //console.log("\n\nelements:\n", elements);
-              const textList = text.split("\n");
-              const regex = /\d+[\., ]\d{0,2}[\ \n]/g;
-              let relevantText = text.match(regex);
-              for (let i = 0; i < relevantText.length; i++) {
-                relevantText[i] = relevantText[i].replace(/\n/g, "");
-              }
-              console.log("Prices:  ", relevantText);
-              console.log("\n\nElements:  ", elements);
-              
-              /*
-              // TENTATIVA DE SALVAR OS ÍNDICES DOS PREÇOS E CASAR COM UMA POSSÍVEL
-              // LISTA DE COORDENADAS
 
-              let relevantIndexes = [];
-              let relevantElements = [];
-              if (relevantText) {
-                for (let i = 0; i < relevantText.length; i++) {
-                  relevantText[i] = relevantText[i].replace(/\n/g, "");
-                  let index = textList.indexOf(relevantText[i]);
-                  console.log("item: ", textList[index]);
-                  relevantIndexes.push(index);
-                }
-                for (let i = 0; i < relevantIndexes.length; i++) {
-
-                  relevantElements.push(elements[relevantIndexes[i]]);
-                }
-              }
-              console.log("relevantText: ", relevantText);
-              console.log("Index:", relevantIndexes);
-              console.log("Elements:", relevantElements);
-              */
+              console.log(result);
+              setDimentions(result["dimentions"]);
+              setPricesAndPositions(result["pricesAndPositions"]);
             }
           }
         );
@@ -105,6 +66,7 @@ const App = () => {
         setCapturedImage(data.uri);
       }
     };
+
 
     const fetchExchangeRate = useCallback(async () => {
       try {
@@ -117,6 +79,7 @@ const App = () => {
         setExchangeRate(-1);
       }
     }, [moeda1Status, moeda2Status]);
+
     
     const handleCurrencySelection = (selectedCurrency) => {
       if (selectedMoedaButton === 'moeda1') {
@@ -149,24 +112,6 @@ const App = () => {
       setIsCurrencyModalVisible(true);
     };
 
-    /*const handleCurrencySelection = (selectedCurrency) => {
-      if (selectedMoedaButton === 'moeda1') {
-        setMoeda1Status(selectedCurrency.code);
-        //console.log('moeda 1 atualizada {}', moeda1Status);
-        //console.log('moeda 2 atualizada {}', moeda2Status);
-      } else if (selectedMoedaButton === 'moeda2') {
-        setMoeda2Status(selectedCurrency.code);
-        //console.log('moeda 2 atualizada {}', moeda2Status);
-      }
-    
-      setIsCurrencyModalVisible(false);
-    
-      // Check if both moeda1Status and moeda2Status are not null before fetching the exchange rate
-      if (moeda1Status !== null && moeda2Status !== null) {
-        console.log('entrou');
-        fetchExchangeRate();
-      }
-    };*/
 
     return (
       <SafeAreaView style={styles.container}>
@@ -176,7 +121,7 @@ const App = () => {
             Exchange Rate: {exchangeRate}
           </Text>
         </View>
-                <View style={styles.exchangeRateContainer}>
+        <View style={styles.exchangeRateContainer}>
           <Text style={styles.exchangeRateText}>
             Tentou?: {tentouConverter}
           </Text>
@@ -204,7 +149,7 @@ const App = () => {
             pauseAfterCapture={false}
           />
         )}
-
+      <OverlayPrice pricesAndPositions={pricesAndPositions} dimentions={dimentions} />
       <View style={styles.topButtonsContainer}>
         {/*Botão Moeda DE*/}
         <TouchableOpacity style={styles.moedaButton} onPress={handleMoeda1Press}>

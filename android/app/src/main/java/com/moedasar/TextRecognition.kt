@@ -14,6 +14,8 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import android.net.Uri
 import org.json.JSONObject
 import android.util.Log
+import android.graphics.BitmapFactory
+
 
 class TextRecognizer(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
     
@@ -27,11 +29,33 @@ class TextRecognizer(reactContext: ReactApplicationContext) : ReactContextBaseJa
         callback.invoke(result)
     }
 
+    private fun getImageDimensions(uri: Uri): JSONObject {
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+    
+        // Use content resolver to open the image and decode bounds
+        BitmapFactory.decodeStream(
+            getReactApplicationContext().contentResolver.openInputStream(uri),
+            null,
+            options
+        )
+    
+        val dimensions = JSONObject()
+        dimensions.put("width", options.outWidth)
+        dimensions.put("height", options.outHeight)
+    
+        return dimensions
+    }
+
     @ReactMethod
     fun processImage(imageUri: String, callback: Callback) {
         val recognizer: TextRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         val uri: Uri = Uri.parse(imageUri)
         val image: InputImage
+
+        val dimentions = getImageDimensions(uri)
+
         try {
             image = InputImage.fromFilePath(getReactApplicationContext(), uri)
             val result = recognizer.process(image)
@@ -52,34 +76,71 @@ class TextRecognizer(reactContext: ReactApplicationContext) : ReactContextBaseJa
                                     val elementCornerPoints = element.cornerPoints
                                     val elementFrame = element.boundingBox
                                     // Get the x,y coordinates of the element's corners
-                                    val corners = mutableListOf<Map<String, Float>>()
-                                    if (elementCornerPoints != null){
+                                    val corners = mutableListOf<JSONObject>()
+                                    if (elementCornerPoints != null) {
                                         for (cornerPoint in elementCornerPoints) {
                                             val x = cornerPoint.x.toFloat()
                                             val y = cornerPoint.y.toFloat()
-                                            corners.add(mapOf("x" to x, "y" to y))
+                                    
+                                            val cornerObject = JSONObject()
+                                            cornerObject.put("x", x)
+                                            cornerObject.put("y", y)
+                                    
+                                            corners.add(cornerObject)
                                         }
                                         // Add the element to the list of elements
-                                        elements.add(mapOf(
-                                            "text" to elementText,
-                                            "corners" to corners,
-                                            "frame" to mapOf(
-                                                Pair("left", elementFrame?.left ?: 0f),
-                                                Pair("top", elementFrame?.top ?: 0f),
-                                                Pair("right", elementFrame?.right ?: 0f),
-                                                Pair("bottom", elementFrame?.bottom ?: 0f)
+                                        elements.add(
+                                            mapOf(
+                                                "text" to elementText,
+                                                "corners" to corners,
+                                                "frame" to mapOf(
+                                                    Pair("left", elementFrame?.left ?: 0f),
+                                                    Pair("top", elementFrame?.top ?: 0f),
+                                                    Pair("right", elementFrame?.right ?: 0f),
+                                                    Pair("bottom", elementFrame?.bottom ?: 0f)
+                                                )
                                             )
-                                        ))
+                                        )
                                     }
                                 }
                             }
                         }
                     }
-                    // essa linha deveria ser allback.invoke(resultText, elements), mas o app quebra se fizer isso
-                    val response = JSONObject()
-                    response.put("text", resultText)
-                    response.put("elements", elements)
-                    callback.invoke(response.toString())
+
+                    val pricesAndPositions = JSONObject()
+
+                    val textList = resultText.split("\n")
+                    val regex = Regex("\\d+[.,]\\d{0,2}[\\s\\n]")
+                    val relevantText = regex.findAll(resultText)
+                        .map { it.value.replace("\n", "") }
+                        .toList()
+
+                    for (i in 0 until relevantText.size) {
+                        val price = relevantText[i]
+                        for (j in 0 until elements.size) {
+                            val element = elements[j]
+
+                            if (price.contains(element["text"] as String)) {
+                                pricesAndPositions.put(price, element["corners"])
+                                if (element["text"] == price) {
+                                    pricesAndPositions.put(price, (element["corners"] as List<Map<String, Float>>)[0])
+                                } else {
+                                    // Verificar se o próximo elemento inclui o preço
+                                    val nextElement = elements.getOrNull(i + 1)
+                                    if (nextElement != null && price.contains(nextElement["text"] as String)) {
+                                        pricesAndPositions.put(price, (nextElement["corners"] as List<Map<String, Float>>)[0])
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    val result = JSONObject();
+                    result.put("dimentions",dimentions)
+                    result.put("pricesAndPositions",pricesAndPositions)
+                    //pricesAndPositions.put("elements", elements)
+                    //pricesAndPositions.put("prices", relevantText)
+                    //pricesAndPositions.put("text", resultText)
+                    callback.invoke(result.toString())
             }.addOnFailureListener { e ->
                 Log.e("TextRecognition", "Text recognition failed", e)
             }
