@@ -5,7 +5,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import {useWindowDimensions } from 'react-native';
 
 
-const OverlayPrice = ({ pricesAndPositions, dimentions }) => {
+const OverlayPrice = ({ pricesAndPositions, exchangeRate, dimentions }) => {
   const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = useWindowDimensions();
 
   // Check if pricesAndPositions is null or undefined
@@ -17,13 +17,24 @@ const OverlayPrice = ({ pricesAndPositions, dimentions }) => {
     <View style={styles.overlay}>
       {Object.entries(pricesAndPositions).map(([price, { x, y }]) => {
         // Adjust the position based on the original dimensions
+        //console.log(typeof price);
+        price = parseFloat(price) * parseFloat(exchangeRate);
+        price = price.toFixed(2);
         const adjustedX = (x / dimentions.width) * (WINDOW_WIDTH); // Adjust to your needs
         const adjustedY = (y / dimentions.height) * (WINDOW_HEIGHT-300); // Adjust to your needs
 
-        return (  
+        return (
           <Text
             key={price}
-            style={{ position: 'absolute', left: adjustedX, top: adjustedY, color: '#0000FF' }}
+            style={{ position: 'absolute', 
+                      left: adjustedX, 
+                      top: adjustedY, 
+                      color: '#e1e3e6',
+                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                      fontSize: 20,
+                      padding: 5,
+                      borderRadius: 10
+                    }}
           >
             {price}
           </Text>

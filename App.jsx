@@ -8,9 +8,13 @@ import CurrencyModal from './CurrencyModal'; // Replace with the correct path
 import currencyData from './CurrencyData'; // Replace with the correct path
 import OverlayPrice from './OverlayPrice'; // Importe o componente de sobreposição
 
-
-
 import { NativeModules } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+const playIcon = <Icon name="play" size={35} color="#000" />;
+const pauseIcon = <Icon name="pause" size={35} color="#000" />;
+const arrow = <Icon name="arrow-right" size={20} color="#fff" />;
+
 
 const App = () => {
  
@@ -21,15 +25,13 @@ const App = () => {
 
     const apiKey = 'fca_live_sT5V2xA0sM7b79KKu6knetcS5XAL8nfC8TGOk4On'; // Replace with your actual API key
     const [exchangeRate, setExchangeRate] = useState(1);
-    const [tentouConverter, setTentouConverter] = useState( 'n');
-
 
     const [isCameraFrozen, setIsCameraFrozen] = useState(false);
     const [capturedImage, setCapturedImage] = useState(null);
     const cameraRef = useRef(null);
 
-    const [moeda1Status, setMoeda1Status] = useState(null);
-    const [moeda2Status, setMoeda2Status] = useState(null);
+    const [moeda1Status, setMoeda1Status] = useState("USD");
+    const [moeda2Status, setMoeda2Status] = useState("BRL");
 
     const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
     const [selectedMoedaButton, setSelectedMoedaButton] = useState('');
@@ -82,7 +84,6 @@ const App = () => {
 
     const fetchExchangeRate = useCallback(async () => {
       try {
-        setTentouConverter('s');
         const converter = new CurrencyConverter(apiKey);
         const rate = await converter.getLatestExchangeRate(moeda1Status, moeda2Status);
         setExchangeRate(rate);
@@ -131,7 +132,7 @@ const App = () => {
 
         <View style={styles.exchangeRateContainer}>
           <Text style={styles.exchangeRateText}>
-            Exchange Rate: {exchangeRate}
+            Exchange Rate: {exchangeRate.toPrecision(3)}
           </Text>
         </View>
 
@@ -147,27 +148,30 @@ const App = () => {
           />
         )}
 
-      <OverlayPrice pricesAndPositions={pricesAndPositions} dimentions={dimentions} />
+      <OverlayPrice pricesAndPositions={pricesAndPositions} exchangeRate={exchangeRate} dimentions={dimentions} />
 
       <View style={styles.topButtonsContainer}>
         {/*Botão Moeda DE*/}
         <TouchableOpacity style={styles.moedaButton} onPress={handleMoeda1Press}>
-          <Text style={styles.buttonText}>{moeda1Status || 'Select Currency'}</Text>
+          <Text style={styles.buttonText}>{moeda1Status || 'c1'}</Text>
         </TouchableOpacity>
-
+        {arrow}
         {/*Botão Moeda PARA*/}
         <TouchableOpacity style={styles.moedaButton} onPress={handleMoeda2Press}>
-          <Text style={styles.buttonText}>{moeda2Status || 'Select Currency'}</Text>
+          <Text style={styles.buttonText}>{moeda2Status || 'c2'}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={toggleFreezeFrame} style={styles.playPause}>
+              {(isCameraFrozen) ? (
+                playIcon
+              ) : (
+                pauseIcon
+              )}
         </TouchableOpacity>
       </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={toggleFreezeFrame} style={styles.button}>
-            <Text style={styles.buttonText}>
-              {' '}
-              {isCameraFrozen ? 'Unfreeze Frame' : 'Freeze Frame'}{' '}
-            </Text>
-          </TouchableOpacity>
+
         </View>
 
         <CurrencyModal
@@ -188,15 +192,33 @@ const styles = StyleSheet.create({
   topButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    alignItems: 'center',
     paddingTop: 10,
+    paddingBottom: 15,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    position: 'absolute',
+    bottom: 0, // Define a posição inferior como 0 para posicionar na parte inferior da tela
+    left: 0, // Define a posição esquerda como 0 para alinhar à esquerda
+    right: 0, // Define a posição direita como 0 para alinhar à direita
+    zIndex: 1, // Define a ordem de empilhamento para garantir que esta View esteja acima dos outros elementos
+  },
+
+
+  playPause: {
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 100
   },
 
   moedaButton: {
-    flex: 1,
+    justifyContent: 'center',
     backgroundColor: '#fff',
-    padding: 15,
-    paddingHorizontal: 15,
-    marginHorizontal: 40,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginHorizontal: 10,
+    borderRadius: 10
   },
 
   buttonContainer: { flex: 0, flexDirection: 'row', justifyContent: 'center' },
@@ -215,6 +237,12 @@ const styles = StyleSheet.create({
     flex: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    position: 'absolute',
+    top: 0, // Define a posição inferior como 0 para posicionar na parte inferior da tela
+    left: 0, // Define a posição esquerda como 0 para alinhar à esquerda
+    right: 0, // Define a posição direita como 0 para alinhar à direita
+    zIndex: 1, // Define a ordem de empilhamento para garantir que esta View esteja acima dos outros elementos
   },
   exchangeRateText: { fontSize: 18, color: '#fff', fontWeight: 'bold' },
 
