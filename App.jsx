@@ -36,35 +36,47 @@ const App = () => {
 
     const [dimentions, setDimentions] = useState(null);
     const [pricesAndPositions, setPricesAndPositions] = useState([]);
+
+
     const toggleFreezeFrame = async () => {
-      setIsCameraFrozen(!isCameraFrozen);
-      if (cameraRef.current) {
-          takeAndProcessPicture();
+
+      const options = { quality: 0.5, base64: true };
+      let data = null;
+      try {
+        data = await cameraRef.current.takePictureAsync(options);
+        setCapturedImage(data.uri);
+      } catch (error) {
+        console.log("sem camera");
       }
+
+      let cameraFrozen = !isCameraFrozen;
+
+      if (cameraFrozen) {
+        setIsCameraFrozen(!isCameraFrozen);
+        await takeAndProcessPicture(data);
+      } else {
+        setIsCameraFrozen(!isCameraFrozen);
+        setPricesAndPositions(null);
+      }
+
     };
 
-    const takeAndProcessPicture = async () => {
-      if (cameraRef.current) {
-        const options = { quality: 0.5, base64: true };
-        const data = await cameraRef.current.takePictureAsync(options);
-        TextRecognizer.processImage(
-          data.uri,
-          (response, error) => {
-            if (error) {
-              console.error("error", error);
-            } else {
-              //console.log("processing", response);
-              const result = JSON.parse(response);
+    const takeAndProcessPicture = async (data) => {
+      TextRecognizer.processImage(
+        data.uri,
+        (response, error) => {
+          if (error) {
+            console.error("error", error);
+          } else {
+            //console.log("processing", response);
+            const result = JSON.parse(response);
 
-              console.log(result);
-              setDimentions(result["dimentions"]);
-              setPricesAndPositions(result["pricesAndPositions"]);
-            }
+            console.log(result);
+            setDimentions(result["dimentions"]);
+            setPricesAndPositions(result["pricesAndPositions"]);
           }
-        );
-        cameraRef.resumePreview()
-        setCapturedImage(data.uri);
-      }
+        }
+      );
     };
 
 
@@ -92,6 +104,7 @@ const App = () => {
     };
     
     useEffect(() => {
+      //console.log("holeee");
       if (moeda1Status !== null && moeda2Status !== null) {
         fetchExchangeRate();
       }
@@ -121,24 +134,8 @@ const App = () => {
             Exchange Rate: {exchangeRate}
           </Text>
         </View>
-        <View style={styles.exchangeRateContainer}>
-          <Text style={styles.exchangeRateText}>
-            Tentou?: {tentouConverter}
-          </Text>
-        </View>
 
-        <View style={styles.exchangeRateContainer}>
-          <Text style={styles.exchangeRateText}>
-            Moeda1: {moeda1Status}
-          </Text>
-        </View>
-        <View style={styles.exchangeRateContainer}>
-          <Text style={styles.exchangeRateText}>
-            Moeda2: {moeda2Status}
-          </Text>
-        </View>
-
-        {capturedImage ? (
+        {(capturedImage && isCameraFrozen)? (
           <Image source={{ uri: capturedImage }} style={styles.preview} />
         ) : (
           <RNCamera
@@ -149,7 +146,9 @@ const App = () => {
             pauseAfterCapture={false}
           />
         )}
+
       <OverlayPrice pricesAndPositions={pricesAndPositions} dimentions={dimentions} />
+
       <View style={styles.topButtonsContainer}>
         {/*Botão Moeda DE*/}
         <TouchableOpacity style={styles.moedaButton} onPress={handleMoeda1Press}>
