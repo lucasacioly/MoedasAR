@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "MoedasAR.app"
-               BlueprintName = "MoedasAR"
-               ReferencedContainer = "container:MoedasAR.xcodeproj">
+               BuildableName = "moedasar.app"
+               BlueprintName = "moedasar"
+               ReferencedContainer = "container:moedasar.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "MoedasARTests.xctest"
-               BlueprintName = "MoedasARTests"
-               ReferencedContainer = "container:MoedasAR.xcodeproj">
+               BuildableName = "moedasarTests.xctest"
+               BlueprintName = "moedasarTests"
+               ReferencedContainer = "container:moedasar.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "MoedasAR.app"
-            BlueprintName = "MoedasAR"
-            ReferencedContainer = "container:MoedasAR.xcodeproj">
+            BuildableName = "moedasar.app"
+            BlueprintName = "moedasar"
+            ReferencedContainer = "container:moedasar.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "MoedasAR.app"
-            BlueprintName = "MoedasAR"
-            ReferencedContainer = "container:MoedasAR.xcodeproj">
+            BuildableName = "moedasar.app"
+            BlueprintName = "moedasar"
+            ReferencedContainer = "container:moedasar.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
